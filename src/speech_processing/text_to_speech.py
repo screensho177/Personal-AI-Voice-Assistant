@@ -1,7 +1,8 @@
 import os
 from dotenv import load_dotenv
 from deepgram import DeepgramClient, SpeakOptions
-from playsound import playsound
+import sounddevice as sd
+import soundfile as sf
 
 load_dotenv()
 
@@ -26,7 +27,9 @@ class TTS:
             response = deepgram.speak.v("1").save(self.filename, SPEAK_OPTIONS, options)
 
             # STEP 4: Play the audio file
-            playsound(self.filename)
+            data, samplerate = sf.read(self.filename, dtype="float32")
+            sd.play(data, samplerate)
+            sd.wait()
 
         except Exception as e:
             print(f"Exception: {e}")

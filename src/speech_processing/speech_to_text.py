@@ -1,12 +1,7 @@
 import asyncio
+import os
 from dotenv import load_dotenv
-from deepgram import (
-    DeepgramClient,
-    DeepgramClientOptions,
-    LiveTranscriptionEvents,
-    LiveOptions,
-    Microphone
-)
+from deepgram import DeepgramClient, Microphone
 
 # Load environment variables from a .env file
 load_dotenv()
@@ -36,11 +31,10 @@ async def get_transcript(callback):
 
     try:
         # Example of setting up a Deepgram client config
-        config = DeepgramClientOptions(options={"keepalive": "true"})
-        deepgram: DeepgramClient = DeepgramClient("", config)
+        deepgram: DeepgramClient = DeepgramClient(api_key=os.getenv("DEEPGRAM_API_KEY"))
 
         # Initialize a connection to Deepgram's asynchronous websocket API
-        dg_connection = deepgram.listen.asyncwebsocket.v("1")
+        dg_connection = deepgram.listen.asynclive.v("1")
         print("Listening...")
 
         async def on_message(self, result, **kwargs):
@@ -67,35 +61,35 @@ async def get_transcript(callback):
                     transcription_complete.set()
 
         # Set up the event listener for transcription events
-        dg_connection.on(LiveTranscriptionEvents.Transcript, on_message)
+        dg_connection.on("Transcript", on_message)
 
         # Define the options for live transcription
-        options = LiveOptions(
-            model="nova-2",
-            punctuate=True,
-            language="en-US",
-            encoding="linear16",
-            channels=1,
-            sample_rate=16000,
-            endpointing=300,
-            smart_format=True,
-        )
-
+        options = {
+        "model": "nova-2",
+        "punctuate": True,
+        "language": "en-US",
+        "encoding": "linear16",
+        "channels": 1,
+        "sample_rate": 16000,
+        "endpointing": 300,
+        "smart_format": True,
+        }
         # Start the connection with the specified options
-        await dg_connection.start(options)
+        if await dg_connection.start(options):
+             print("Connected to Deepgram")
+    
+             # Open microphone
+             microphone = Microphone(dg_connection.send)
+             microphone.start()
 
-        # Open a microphone stream on the default input device
-        microphone = Microphone(dg_connection.send)
-        microphone.start()
+    # Wait for transcription
+             await transcription_complete.wait()
 
-        # Wait for the transcription to complete
-        await transcription_complete.wait()
-
-        # Wait for the microphone to close
-        microphone.finish()
-
-        # Indicate that we've finished
-        await dg_connection.finish()
+    # Cleanup
+             microphone.finish()
+             await dg_connection.finish()
+        else:
+            print("Failed to connect to Deepgram")
 
     except Exception as e:
         print(f"Could not open socket: {e}")

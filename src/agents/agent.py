@@ -24,14 +24,8 @@ class Agent:
 
     def execute(self):
         response_message = self.call_llm()
-        response_content = response_message.content
-        tool_calls = response_message.tool_calls
-        if tool_calls:
-            try:
-                response_content = self.run_tools(tool_calls)
-            except Exception as e:
-                print(Fore.RED + f"\nError: {e}\n")
-        return response_content
+        return response_message.content
+
 
     def run_tools(self, tool_calls):
         for tool_call in tool_calls:
@@ -72,7 +66,7 @@ class Agent:
         message = response.choices[0].message
         if message.tool_calls is None:
             message.tool_calls = []
-        if message.function_call is None:
+        if not hasattr(message, "function_call") or message.function_call is None:
             message.function_call = {}
         self.handle_messages_history(
             "assistant", message.content, tool_calls=message.tool_calls
