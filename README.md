@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # AI Voice Assistant: Your Intelligent Conversational Companion
 
 **Transform your digital interactions with your own AI Voice Assistant🎙️🤖**
@@ -109,4 +110,8 @@ Contributions are welcome! Please open an issue or submit a pull request for any
 
 ## Contact
 
-If you have any questions or suggestions, feel free to contact me at `aymenMir1001@gmail.com`.
+If you have any questions or suggestions, feel free to contact me at `manjuj276@gmail.com`.
+=======
+# Personal-AI-Voice-Assistant
+AI Powered Personal Voice Assistant
+>>>>>>> bdf8f165dc3de4abd4b37dd09a019c7ec24bac6e
